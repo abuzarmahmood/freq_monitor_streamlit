@@ -207,6 +207,7 @@ else:
     device_files = glob(os.path.join(recent_data_dir, 'recent_data_device_*.csv'))
     device_numbers = [int(f.split('_')[-1].split('.')[0]) for f in device_files]
 
+audio_elements = []
 if not device_numbers:
     st.warning("No device data found in the recent data directory.")
 else:
@@ -249,8 +250,12 @@ else:
                             freq_out_of_bounds = current_freq < min_freq or current_freq > max_freq
                             if freq_out_of_bounds:
                                 st.error("⚠️ Frequency out of bounds!")
-                                st.audio(os.path.join(artifacts_dir, 'warning.wav'),
+                                if len(audio_elements) == 0: # Only play audio once 
+                                    this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
                                          autoplay=True, loop=True)
+                                    audio_elements.append(this_audio)
+                                elif len(audio_elements) > 0: 
+                                    pass
                             else:
                                 st.success("✅ Frequency within bounds")
                         
