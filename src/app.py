@@ -26,8 +26,11 @@ if use_s3:
     s3_prefix = st.sidebar.text_input("S3 Prefix (folder path)", value="recent_data/")
 
 # Get data directory
-base_dir = '/home/abuzarmahmood/projects/video_movement_frequency'
-recent_data_dir = os.path.join(base_dir, 'artifacts', 'recent_data')
+script_path = os.path.abspath(__file__)
+src_dir = os.path.dirname(script_path)
+base_dir = os.path.dirname(src_dir)
+artifacts_dir = os.path.join(base_dir, 'artifacts')
+recent_data_dir = os.path.join(artifacts_dir, 'recent_data')
 
 def get_s3_client():
     """Create and return an S3 client using provided credentials"""
@@ -245,7 +248,8 @@ else:
                             freq_out_of_bounds = current_freq < min_freq or current_freq > max_freq
                             if freq_out_of_bounds:
                                 st.error("⚠️ Frequency out of bounds!")
-                                st.audio("warning.wav", autoplay=True)
+                                st.audio(os.path.join(artifacts_dir, 'warning.wav'),
+                                         autoplay=True, loop=True)
                             else:
                                 st.success("✅ Frequency within bounds")
                         
