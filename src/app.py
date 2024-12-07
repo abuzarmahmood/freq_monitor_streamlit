@@ -52,8 +52,10 @@ def load_s3_data(device_num):
     try:
         # Construct S3 paths
         st.write(f'Looking for data in bucket {s3_bucket} with prefix {s3_prefix}')
-        data_key = f"{s3_prefix.rstrip('/')}recent_data_device_{device_num}.csv"
-        bounds_key = f"{s3_prefix.rstrip('/')}freq_bounds_device_{device_num}.csv"
+        data_key = s3_prefix + f"recent_data_device_{device_num}.csv"
+        bounds_key = s3_prefix + f"freq_bounds_device_{device_num}.csv"
+        st.write(f"Data key: {data_key}")
+        st.write(f"Bounds key: {bounds_key}")
         
         # Get data file
         response = s3_client.get_object(Bucket=s3_bucket, Key=data_key)
