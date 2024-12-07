@@ -7,31 +7,9 @@ import os
 import time
 import threading
 import atexit
-import pygame.mixer
-import pygame
 import boto3
 import io
 from botocore.exceptions import ClientError
-
-# Initialize pygame mixer and global variables
-pygame.mixer.init()
-
-
-# Create a simple warning beep
-def create_warning_beep():
-    sample_rate = 44100
-    duration = 0.5  # seconds
-    frequency = 440  # Hz
-    t = np.linspace(0, duration, int(sample_rate * duration))
-    samples = np.sin(2 * np.pi * frequency * t)
-    # Create stereo by duplicating mono signal
-    stereo = np.vstack((samples, samples)).T
-    # Ensure array is contiguous and in the correct format
-    scaled = np.ascontiguousarray(stereo * 32767, dtype=np.int16)
-    return pygame.sndarray.make_sound(scaled)
-
-# Initialize warning sound
-warning_beep = create_warning_beep()
 
 
 st.set_page_config(page_title="Frequency Monitor", layout="wide")
@@ -267,7 +245,7 @@ else:
                             freq_out_of_bounds = current_freq < min_freq or current_freq > max_freq
                             if freq_out_of_bounds:
                                 st.error("⚠️ Frequency out of bounds!")
-                                warning_beep.play()
+                                st.audio("warning.wav", autoplay=True)
                             else:
                                 st.success("✅ Frequency within bounds")
                         
