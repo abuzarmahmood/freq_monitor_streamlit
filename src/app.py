@@ -224,7 +224,11 @@ else:
                         # Display current frequency and delay
                         current_freq = data['freq_filtered'].iloc[-1]
                         last_time = data['time'].iloc[-1]
-                        delay = (pd.Timestamp.now() - pd.to_datetime(last_time)).total_seconds()
+                        timezone = bounds['timezone'].iloc[0]
+                        last_time = pd.to_datetime(last_time).tz_localize(timezone)
+                        delay = (
+                                pd.Timestamp.now(tz = timezone) - last_time 
+                                ).total_seconds()
                         
                         col1, col2 = st.columns(2)
                         with col1:
