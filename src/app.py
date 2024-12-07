@@ -20,8 +20,6 @@ st.sidebar.header("Data Source Configuration")
 use_s3 = st.sidebar.checkbox("Use AWS S3")
 
 if use_s3:
-    aws_access_key = st.sidebar.text_input("AWS Access Key ID", type="password")
-    aws_secret_key = st.sidebar.text_input("AWS Secret Access Key", type="password")
     s3_bucket = st.sidebar.text_input("S3 Bucket Name")
     s3_prefix = st.sidebar.text_input("S3 Prefix (folder path)", value="recent_data/")
 
@@ -34,15 +32,11 @@ recent_data_dir = os.path.join(artifacts_dir, 'recent_data')
 
 def get_s3_client():
     """Create and return an S3 client using provided credentials"""
-    if not (aws_access_key and aws_secret_key):
-        st.error("AWS credentials are required when using S3")
-        return None
-    
     try:
         s3_client = boto3.client(
             's3',
-            aws_access_key_id=aws_access_key,
-            aws_secret_access_key=aws_secret_key
+            aws_access_key_id=st.secrets["aws_access_key_id"],
+            aws_secret_access_key=st.secrets["aws_secret_access_key"]
         )
         return s3_client
     except Exception as e:
