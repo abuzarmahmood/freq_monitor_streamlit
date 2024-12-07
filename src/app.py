@@ -20,8 +20,8 @@ st.sidebar.header("Data Source Configuration")
 use_s3 = st.sidebar.checkbox("Use AWS S3")
 
 if use_s3:
-    s3_bucket = st.sidebar.text_input("S3 Bucket Name")
-    s3_prefix = st.sidebar.text_input("S3 Prefix (folder path)", value="recent_data/")
+    s3_bucket = st.secrets['S3_BUCKET_NAME']
+    s3_prefix = "recent_data/"
 
 # Get data directory
 script_path = os.path.abspath(__file__)
@@ -35,8 +35,8 @@ def get_s3_client():
     try:
         s3_client = boto3.client(
             's3',
-            aws_access_key_id=st.secrets["aws_access_key_id"],
-            aws_secret_access_key=st.secrets["aws_secret_access_key"]
+            aws_access_key_id=st.secrets["S3_KEY"],
+            aws_secret_access_key=st.secrets["S3_SECRET"]
         )
         return s3_client
     except Exception as e:
@@ -51,6 +51,7 @@ def load_s3_data(device_num):
     
     try:
         # Construct S3 paths
+        st.write(f'Looking for data in bucket {s3_bucket} with prefix {s3_prefix}')
         data_key = f"{s3_prefix.rstrip('/')}recent_data_device_{device_num}.csv"
         bounds_key = f"{s3_prefix.rstrip('/')}freq_bounds_device_{device_num}.csv"
         
