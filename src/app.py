@@ -187,6 +187,14 @@ refresh_interval = st.sidebar.slider(
     value=1
 )
 
+# Delay threshold
+delay_threshold = st.sidebar.slider(
+    "Delay Threshold (seconds)",
+    min_value=1,
+    max_value=300,
+    value=60
+)
+
 # Get available devices
 if use_s3:
     s3_client = get_s3_client()
@@ -248,8 +256,13 @@ else:
                             min_freq = bounds['min_freq'].iloc[0]
                             max_freq = bounds['max_freq'].iloc[0]
                             freq_out_of_bounds = current_freq < min_freq or current_freq > max_freq
-                            if freq_out_of_bounds:
-                                st.error("⚠️ Frequency out of bounds!")
+                            delay_too_large = delay > delay_threshold
+                            
+                            if freq_out_of_bounds or delay_too_large:
+                                if freq_out_of_bounds:
+                                    st.error("⚠️ Frequency out of bounds!")
+                                if delay_too_large:
+                                    st.error(f"⚠️ Delay exceeds threshold ({delay:.1f}s > {delay_threshold}s)!")
                                 if len(audio_elements) == 0: # Only play audio once 
                                     this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
                                          autoplay=True, loop=True)
