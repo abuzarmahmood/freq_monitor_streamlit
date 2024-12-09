@@ -266,6 +266,8 @@ else:
                                     st.error("⚠️ Frequency out of bounds!")
                                 if delay_too_large:
                                     st.error(f"⚠️ Delay exceeds threshold ({delay:.1f}s > {delay_threshold}s)!")
+                                if 'this_audio' in st.session_state.to_dict().keys():
+                                    del st.session_state.this_audio
                                 st.session_state.this_audio = st.audio(
                                             os.path.join(artifacts_dir, 'warning.wav'),
                                             autoplay=True, 
@@ -273,8 +275,6 @@ else:
                                             )
                             else:
                                 st.success("✅ Frequency within bounds")
-                                if 'this_audio' in st.session_state.to_dict().keys():
-                                    del st.session_state.this_audio
                         
                     except Exception as e:
                         st.error(f"Error processing data for Device {device_num}: {str(e)}")
