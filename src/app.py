@@ -276,7 +276,7 @@ else:
                             
                             if freq_out_of_bounds:
                                 st.error("⚠️ Frequency out of bounds!")
-                            if delay_too_large:
+                            elif delay_too_large:
                                 st.error("⚠️ Delay too large!")
                             else:
                                 st.success("✅ Device operating normally")
@@ -306,23 +306,5 @@ else:
         
         if needs_alarm:
             audio_path = os.path.join(artifacts_dir, 'warning.wav')
-            # st.html(
-            #         f'<audio autoplay loop><source src="{audio_path}" type="audio/wav"></audio>', 
-            #         # height=0
-            #         )
             st.audio(audio_path, autoplay=True, loop=True)
-            # if len(audio_elements) == 0:  # Only play audio once
-            #     this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
-            #                         autoplay=True, loop=True)
-            #     audio_elements.append(this_audio)
-        # else:
-        #     if len(audio_elements) > 0:
-        #         audio_elements[0].empty()
-        #         audio_elements = []
-        # 
-        # Clear alarm conditions for next refresh
         st.session_state.alarm_conditions = []
-    
-    # Auto-refresh
-    # time.sleep(refresh_interval)
-    # st.rerun()
