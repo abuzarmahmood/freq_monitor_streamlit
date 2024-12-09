@@ -258,19 +258,21 @@ else:
                             freq_out_of_bounds = current_freq < min_freq or current_freq > max_freq
                             delay_too_large = delay > delay_threshold
                             
+                            # Store alarm conditions for later checking
+                            if 'alarm_conditions' not in st.session_state:
+                                st.session_state.alarm_conditions = []
+                            
+                            st.session_state.alarm_conditions.append({
+                                'device': device_num,
+                                'freq_out_of_bounds': freq_out_of_bounds,
+                                'delay_too_large': delay_too_large,
+                                'delay': delay
+                            })
+                            
                             if freq_out_of_bounds or delay_too_large:
-                                if freq_out_of_bounds:
-                                    st.error("⚠️ Frequency out of bounds!")
-                                if delay_too_large:
-                                    st.error(f"⚠️ Delay exceeds threshold ({delay:.1f}s > {delay_threshold}s)!")
-                                if len(audio_elements) == 0: # Only play audio once 
-                                    this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
-                                         autoplay=True, loop=True)
-                                    audio_elements.append(this_audio)
-                                elif len(audio_elements) > 0: 
-                                    pass
+                                st.error("⚠️ Device needs attention!")
                             else:
-                                st.success("✅ Frequency within bounds")
+                                st.success("✅ Device operating normally")
                         
                         # Create and display plot
                         fig = create_plot(data, bounds, device_num)
@@ -284,7 +286,29 @@ else:
             with cols[i]:
                 st.error(f"Error processing Device {device_num}: {str(e)}")
     
+    # Check alarm conditions after all plots are created
+    if 'alarm_conditions' in st.session_state and st.session_state.alarm_conditions:
+        needs_alarm = False
+        alarm_messages = []
+        
+        for condition in st.session_state.alarm_conditions:
+            if condition['freq_out_of_bounds']:
+                needs_alarm = True
+                alarm_messages.append(f"⚠️ Device {condition['device']}: Frequency out of bounds!")
+            if condition['delay_too_large']:
+                needs_alarm = True
+                alarm_messages.append(f"⚠️ Device {condition['device']}: Delay exceeds threshold ({condition['delay']:.1f}s > {delay_threshold}s)!")
+        
+        if needs_alarm:
+            st.sidebar.error("\n".join(alarm_messages))
+            if len(audio_elements) == 0:  # Only play audio once
+                this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
+                                    autoplay=True, loop=True)
+                audio_elements.append(this_audio)
+        
+        # Clear alarm conditions for next refresh
+        st.session_state.alarm_conditions = []
+    
     # Auto-refresh
     time.sleep(refresh_interval)
-    # st.experimental_rerun()
     st.rerun()
