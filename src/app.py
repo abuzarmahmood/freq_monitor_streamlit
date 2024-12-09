@@ -11,9 +11,14 @@ import boto3
 import io
 from botocore.exceptions import ClientError
 
+from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(page_title="Frequency Monitor", layout="wide")
 st.title("Real-time Frequency Monitoring")
+# Run the autorefresh about every 2000 milliseconds (2 seconds) and stop
+# after it's been refreshed 100 times.
+count = st_autorefresh(interval=2000, key="fizzbuzzcounter")
+
 
 # AWS Configuration
 st.sidebar.header("Data Source Configuration")
@@ -269,8 +274,10 @@ else:
                                 'delay': delay
                             })
                             
-                            if freq_out_of_bounds or delay_too_large:
-                                st.error("⚠️ Device needs attention!")
+                            if freq_out_of_bounds:
+                                st.error("⚠️ Frequency out of bounds!")
+                            if delay_too_large:
+                                st.error("⚠️ Delay too large!")
                             else:
                                 st.success("✅ Device operating normally")
                         
@@ -294,21 +301,28 @@ else:
         for condition in st.session_state.alarm_conditions:
             if condition['freq_out_of_bounds']:
                 needs_alarm = True
-                alarm_messages.append(f"⚠️ Device {condition['device']}: Frequency out of bounds!")
             if condition['delay_too_large']:
                 needs_alarm = True
-                alarm_messages.append(f"⚠️ Device {condition['device']}: Delay exceeds threshold ({condition['delay']:.1f}s > {delay_threshold}s)!")
         
         if needs_alarm:
-            st.sidebar.error("\n".join(alarm_messages))
-            if len(audio_elements) == 0:  # Only play audio once
-                this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
-                                    autoplay=True, loop=True)
-                audio_elements.append(this_audio)
-        
+            audio_path = os.path.join(artifacts_dir, 'warning.wav')
+            # st.html(
+            #         f'<audio autoplay loop><source src="{audio_path}" type="audio/wav"></audio>', 
+            #         # height=0
+            #         )
+            st.audio(audio_path, autoplay=True, loop=True)
+            # if len(audio_elements) == 0:  # Only play audio once
+            #     this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
+            #                         autoplay=True, loop=True)
+            #     audio_elements.append(this_audio)
+        # else:
+        #     if len(audio_elements) > 0:
+        #         audio_elements[0].empty()
+        #         audio_elements = []
+        # 
         # Clear alarm conditions for next refresh
         st.session_state.alarm_conditions = []
     
     # Auto-refresh
-    time.sleep(refresh_interval)
-    st.rerun()
+    # time.sleep(refresh_interval)
+    # st.rerun()
