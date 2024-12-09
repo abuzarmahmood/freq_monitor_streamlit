@@ -11,9 +11,14 @@ import boto3
 import io
 from botocore.exceptions import ClientError
 
+from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(page_title="Frequency Monitor", layout="wide")
 st.title("Real-time Frequency Monitoring")
+# Run the autorefresh about every 2000 milliseconds (2 seconds) and stop
+# after it's been refreshed 100 times.
+count = st_autorefresh(interval=2000, key="fizzbuzzcounter")
+
 
 # AWS Configuration
 st.sidebar.header("Data Source Configuration")
@@ -258,19 +263,23 @@ else:
                             freq_out_of_bounds = current_freq < min_freq or current_freq > max_freq
                             delay_too_large = delay > delay_threshold
                             
-                            if freq_out_of_bounds or delay_too_large:
-                                if freq_out_of_bounds:
-                                    st.error("⚠️ Frequency out of bounds!")
-                                if delay_too_large:
-                                    st.error(f"⚠️ Delay exceeds threshold ({delay:.1f}s > {delay_threshold}s)!")
-                                if len(audio_elements) == 0: # Only play audio once 
-                                    this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
-                                         autoplay=True, loop=True)
-                                    audio_elements.append(this_audio)
-                                elif len(audio_elements) > 0: 
-                                    pass
+                            # Store alarm conditions for later checking
+                            if 'alarm_conditions' not in st.session_state:
+                                st.session_state.alarm_conditions = []
+                            
+                            st.session_state.alarm_conditions.append({
+                                'device': device_num,
+                                'freq_out_of_bounds': freq_out_of_bounds,
+                                'delay_too_large': delay_too_large,
+                                'delay': delay
+                            })
+                            
+                            if freq_out_of_bounds:
+                                st.error("⚠️ Frequency out of bounds!")
+                            elif delay_too_large:
+                                st.error("⚠️ Delay too large!")
                             else:
-                                st.success("✅ Frequency within bounds")
+                                st.success("✅ Device operating normally")
                         
                         # Create and display plot
                         fig = create_plot(data, bounds, device_num)
@@ -284,7 +293,18 @@ else:
             with cols[i]:
                 st.error(f"Error processing Device {device_num}: {str(e)}")
     
-    # Auto-refresh
-    time.sleep(refresh_interval)
-    # st.experimental_rerun()
-    st.rerun()
+    # Check alarm conditions after all plots are created
+    if 'alarm_conditions' in st.session_state and st.session_state.alarm_conditions:
+        needs_alarm = False
+        alarm_messages = []
+        
+        for condition in st.session_state.alarm_conditions:
+            if condition['freq_out_of_bounds']:
+                needs_alarm = True
+            if condition['delay_too_large']:
+                needs_alarm = True
+        
+        if needs_alarm:
+            audio_path = os.path.join(artifacts_dir, 'warning.wav')
+            st.audio(audio_path, autoplay=True, loop=True)
+        st.session_state.alarm_conditions = []
