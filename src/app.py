@@ -249,6 +249,10 @@ else:
                                 "Delay",
                                 f"{delay:.1f} seconds"
                             )
+
+                        # Create and display plot
+                        fig = create_plot(data, bounds, device_num)
+                        st.plotly_chart(fig, use_container_width=True)
                         
                         # Check if frequency is within bounds
                         if bounds is not None and not bounds.empty:
@@ -262,19 +266,16 @@ else:
                                     st.error("⚠️ Frequency out of bounds!")
                                 if delay_too_large:
                                     st.error(f"⚠️ Delay exceeds threshold ({delay:.1f}s > {delay_threshold}s)!")
-                                if 'this_audio' not in locals(): 
-                                    this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
-                                         autoplay=True, loop=True)
-                                else:
-                                    del this_audio
-                                    this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
-                                            autoplay=True, loop=True)
+                                st.session_state.this_audio = st.audio(
+                                            os.path.join(artifacts_dir, 'warning.wav'),
+                                            autoplay=True, 
+                                            loop=True, 
+                                            )
                             else:
                                 st.success("✅ Frequency within bounds")
+                                if 'this_audio' in st.session_state:
+                                    del st.session_state.this_audio
                         
-                        # Create and display plot
-                        fig = create_plot(data, bounds, device_num)
-                        st.plotly_chart(fig, use_container_width=True)
                     except Exception as e:
                         st.error(f"Error processing data for Device {device_num}: {str(e)}")
             else:
@@ -286,5 +287,4 @@ else:
     
     # Auto-refresh
     time.sleep(refresh_interval)
-    # st.experimental_rerun()
     st.rerun()
