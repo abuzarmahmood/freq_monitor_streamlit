@@ -276,9 +276,9 @@ else:
                             
                             if freq_out_of_bounds:
                                 st.error("⚠️ Frequency out of bounds!")
-                            elif delay_too_large:
+                            if delay_too_large:
                                 st.error("⚠️ Delay too large!")
-                            else:
+                            if not freq_out_of_bounds and not delay_too_large:
                                 st.success("✅ Device operating normally")
                         
                         # Create and display plot
