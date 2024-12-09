@@ -273,7 +273,7 @@ else:
                                             )
                             else:
                                 st.success("✅ Frequency within bounds")
-                                if 'this_audio' in st.session_state:
+                                if 'this_audio' in st.session_state.to_dict().keys():
                                     del st.session_state.this_audio
                         
                     except Exception as e:
