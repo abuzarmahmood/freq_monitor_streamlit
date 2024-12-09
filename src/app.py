@@ -215,7 +215,6 @@ else:
     device_files = glob(os.path.join(recent_data_dir, 'recent_data_device_*.csv'))
     device_numbers = [int(f.split('_')[-1].split('.')[0]) for f in device_files]
 
-audio_elements = []
 if not device_numbers:
     st.warning("No device data found in the recent data directory.")
 else:
@@ -263,12 +262,13 @@ else:
                                     st.error("⚠️ Frequency out of bounds!")
                                 if delay_too_large:
                                     st.error(f"⚠️ Delay exceeds threshold ({delay:.1f}s > {delay_threshold}s)!")
-                                if len(audio_elements) == 0: # Only play audio once 
+                                if 'this_audio' not in locals(): 
                                     this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
                                          autoplay=True, loop=True)
-                                    audio_elements.append(this_audio)
-                                elif len(audio_elements) > 0: 
-                                    pass
+                                else:
+                                    del this_audio
+                                    this_audio = st.audio(os.path.join(artifacts_dir, 'warning.wav'),
+                                            autoplay=True, loop=True)
                             else:
                                 st.success("✅ Frequency within bounds")
                         
